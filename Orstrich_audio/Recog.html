@@ -1,0 +1,82 @@
+<head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+    
+    <h4>Speech recognition results will be shown below:<h4>
+  	<h1 id="show"></h1>
+
+    <script>
+	
+  var retMsg = "";
+  var show = document.getElementById('show');
+  var recognition = new webkitSpeechRecognition();
+  var defaultLanguage = "en-US"; //"cmn-Hant-TW" for Chinese
+  var recogDone = false;
+	if('WebSocket' in window) {
+    console.log("build socket");
+      //use the following if the server IP is static and known
+	  var ws = new WebSocket("ws://localhost:7122");
+	  //use the following instead if the server IP is dynamic, the URL will then be:
+	  //http://<server_URL>?sIP=<IP_of_server>:<port>
+	  //http://stackoverflow.com/questions/979975/how-to-get-the-value-from-url-parameter
+	  //var ws = new WebSocket("ws://"+location.search.split('sIP=')[1] + ":7122");
+      
+      ws.onopen = function() {
+        //alert("CONNECTIIIONNN");
+        //ws.send( {'test': 'message'} );
+        //ws.send('a long string');
+      };
+      
+      ws.onclose = function(evt) {
+       alert("Connection closed");
+      };
+      
+      ws.onerror = function(evt) {
+		    if(ws) alert("Error: " + evt.data);
+		    else alert("Cannot connect to server");
+        location.reload();
+      };
+      
+      ws.onmessage = function(evt) {
+        //alert("Wowee " + evt.data);
+      };
+
+      setInterval(function() {
+        if(retMsg != "") {
+          ws.send(retMsg);
+          retMsg = "";
+          location.reload();
+        }
+      }, 100);
+	
+	} else {
+		alert("Your browser does not support the WebSockets API");
+	}
+
+    recognition.continuous=true;
+    recognition.interimResults=false;
+    recognition.lang=defaultLanguage;
+
+    recognition.onstart=function(){
+      console.log("Recognition start.");
+      recogDone = false;
+    };
+    recognition.onend=function(){
+      console.log("Recognition stop.");
+    };
+
+    recognition.onresult=function(event){
+      var i = event.resultIndex;
+      var j = event.results[i].length-1;
+      retMsg = event.results[i][j].transcript;
+      console.log("send " + retMsg);
+      show.innerHTML = retMsg;
+    };
+
+    recognition.start(); 
+    
+    </script>
+</head>
+
+<body>
+</body>
