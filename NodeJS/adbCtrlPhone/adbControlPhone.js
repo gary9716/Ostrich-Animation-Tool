@@ -13,6 +13,8 @@ var swipeDownCmd = "input swipe 596 915 657 1530";
 var swipeUpCmd = "input swipe 657 1530 596 915";
 var pressSmallAnimalButton = "input tap 758 942";
 
+var serverPort = 8081;
+
 client.listDevices().then(function(devices) {
   
   var fileIsLoaded = false;
@@ -105,52 +107,55 @@ client.listDevices().then(function(devices) {
     response.end();
   });
 
-
-  var keypress = require('keypress');
-  keypress(process.stdin);
+  app.listen(serverPort ,function(){
+    console.log("server started listen on " + serverPort);
+  });
 
   //keypress logic
-  process.stdin.on('keypress', function (ch, key) {
-    if(key) {
-      console.log('got keypress '+ key.name);
-    }
+  // var keypress = require('keypress');
+  // keypress(process.stdin);
 
-    if (key && key.ctrl && key.name == 'c') { //terminate the app: ctrl + c
-      return process.exit();
-    }
-    else if(key.name == 'up'){
-      return client.shell(device.id, "input keyevent 4");  //back   
-    }
-    else if(key.name == 'space'){
-      return client.shell(device.id, "input keyevent 3");  //Home
-    }
-    else if(key.name == 'u'){
-      return client.shell(device.id, swipeUpCmd); //swipe up
-    }
-    else if(key.name == 'd'){
-      return client.shell(device.id, swipeDownCmd); //swipe down
-    }
-    else if(key.name == 'o'){
-      return client.shell(device.id, "input keyevent 26"); //Power
-    }
-    else if(key.name == 'h'){
-      return playHeliumEffect();
-    }
-    else if(key.name == 's'){
-      return playSmallAnimalEffect();
-    }
-    else if(key.name == 'q'){
-      return loadAudioFile();
-    }
-    else if(key.name == 'p'){
-      return uploadAudioFile();
-    }
+  // process.stdin.on('keypress', function (ch, key) {
+  //   if(key) {
+  //     console.log('got keypress '+ key.name);
+  //   }
 
-  });
+  //   if (key && key.ctrl && key.name == 'c') { //terminate the app: ctrl + c
+  //     return process.exit();
+  //   }
+  //   else if(key.name == 'up'){
+  //     return client.shell(device.id, "input keyevent 4");  //back   
+  //   }
+  //   else if(key.name == 'space'){
+  //     return client.shell(device.id, "input keyevent 3");  //Home
+  //   }
+  //   else if(key.name == 'u'){
+  //     return client.shell(device.id, swipeUpCmd); //swipe up
+  //   }
+  //   else if(key.name == 'd'){
+  //     return client.shell(device.id, swipeDownCmd); //swipe down
+  //   }
+  //   else if(key.name == 'o'){
+  //     return client.shell(device.id, "input keyevent 26"); //Power
+  //   }
+  //   else if(key.name == 'h'){
+  //     return playHeliumEffect();
+  //   }
+  //   else if(key.name == 's'){
+  //     return playSmallAnimalEffect();
+  //   }
+  //   else if(key.name == 'q'){
+  //     return loadAudioFile();
+  //   }
+  //   else if(key.name == 'p'){
+  //     return uploadAudioFile();
+  //   }
+
+  // });
     
-  process.stdin.setRawMode(true);
-  console.log("start to detect keypress");
-  process.stdin.resume();
+  // process.stdin.setRawMode(true);
+  // console.log("start to detect keypress");
+  // process.stdin.resume();
 
 });
 
