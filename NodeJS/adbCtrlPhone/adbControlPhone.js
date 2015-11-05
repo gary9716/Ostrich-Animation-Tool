@@ -100,6 +100,7 @@ client.listDevices().then(function(devices) {
       var cmd = request.body.command;
 
       if(cmd == 'play') {
+        console.log("play:" + fileName);
         uploadAudioFile(fileName);
         playSmallAnimalEffect();
       }

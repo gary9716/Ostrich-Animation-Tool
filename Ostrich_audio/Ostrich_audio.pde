@@ -215,12 +215,13 @@ void idleBehavior() {
 	if(currentRecFileNum != 0) {
     Double rand = Math.random() * currentRecFileNum;
 		playFileIndex = rand.intValue();
+            //println("curr:" + currentRecFileNum + ",fileIndex:" + playFileIndex);
 		PostRequest playFileCmd = new PostRequest("http://127.0.0.1:8081/PhoneCtrl");
 		playFileCmd.addData("command", "play");
 		playFileCmd.addData("filename", audioPrefixPath + "record" + playFileIndex + ".wav");
 		playFileCmd.send();
 		//TODO: make Orstrich perform default move
-    delay(2000);
+    delay(10000); // we should delay for audio file length 
   }
 }
 
@@ -253,7 +254,7 @@ void draw() {
 				webSocketProcessor.connect();
 				isConnected = true;
 				if(!recorder.isRecording()) {
-					recorder = minim.createRecorder(micIn, audioPrefixPath + "record" + currentRecFileIndex + ".wav");
+					recorder = minim.createRecorder(micIn, audioPrefixPath + "record" + currentRecFileNum + ".wav");
 					recorder.beginRecord();
 				}
 			}
@@ -272,14 +273,18 @@ void draw() {
 				}
 
         //TODO
-        if (evalRet == "Neutral") {
+        println("evalRet:" + evalRet);
+        if (evalRet.equals("Neutral")) {
           //TODO add Neutral relateive movement
+          println("play Neutral animation");
           say0();  //example
-        } else if (evalRet == "Positive") {
+        } else if (evalRet.equals("Positive")) {
           //TODO add Positive relateive movement
+          println("play Positive animation");
           say1();  //example
-        } else if (evalRet == "Nagtive") {
+        } else if (evalRet.equals("Negative")) {
           //TODO add Nagtive relateive movement
+          println("play Negative animation");
           say2();  //example
         }
 
