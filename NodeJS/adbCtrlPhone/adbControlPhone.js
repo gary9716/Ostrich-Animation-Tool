@@ -3,8 +3,10 @@ var client = require('adbkit').createClient();
 var express = require("express");
 var bodyParser = require("body-parser");
 var app = express();
+var exposePath = "./";
+
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static("./")); //expose Recog.html
+app.use('/',express.static(exposePath)); //expose Recog.html
 
 Promise.promisify(client.shell);
 
@@ -25,8 +27,7 @@ client.listDevices().then(function(devices) {
     device = devices[0];
   }
   else {
-    console.log("no device found");
-    process.exit();
+    console.log("no device found, disable voice changer");
   }
 
   var loadAudioFile = function() {
@@ -94,17 +95,21 @@ client.listDevices().then(function(devices) {
   };
 
   app.post('/PhoneCtrl',function(request,response){
-    var fileName = request.body.filename;
-    var cmd = request.body.command;
+    if(device) {
+      var fileName = request.body.filename;
+      var cmd = request.body.command;
 
-    if(cmd == 'push') { //push file
-      uploadAudioFile(fileName);
+      if(cmd == 'play') {
+        uploadAudioFile(fileName);
+        playSmallAnimalEffect();
+      }
     }
-    else if(cmd == 'play'){ //play audio
-      playSmallAnimalEffect();
+    else {
+      console.log("post request failed, no device found");
     }
 
     response.end();
+
   });
 
   app.listen(serverPort ,function(){

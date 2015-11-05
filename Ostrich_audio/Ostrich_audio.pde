@@ -1,8 +1,9 @@
+//package import
 import processing.net.*;
 import net.victorcheung.WSProcessor.*;
 import ddf.minim.*;
 
-//Http POST request class, super ugly but needed, sad
+//dirty part of the code, the whole class of PostRequest
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ public class PostRequest
 
   public PostRequest(String url)
   {
-    this(url, "ISO-8859-1");
+    this(url, "UTF-8");
   }
   
   public PostRequest(String url, String encoding) 
@@ -148,116 +149,146 @@ public class PostRequest
     }
   }
 }
+//end class
 
-//here ends the ugly part
+//constant declaration
+final int maxRecFileNum = 10;
+final int serverPort = 7122;
 
-Server myServer;
-// single client supported
-Client myClient;
-int serverPort = 7122;
-boolean isConnected = false;
-WSProcessor myWSProcessor;
+//varaible declaration
 PFont font;
 
-String recogRet = "";
-String evalRet = "";
+//state machine
+boolean isIdleState = true;
 
+//audio recording
+int currentRecFileNum = 0, currentRecFileIndex = 0;
 Minim minim;
-AudioInput in;
+AudioInput micIn;
 AudioRecorder recorder;
-int recCnt = 0;
+
+//websocket connection
+Server localServer;
+Client recogClient;
+boolean isConnected = false;
+WSProcessor webSocketProcessor;
+
+//voice recognition & sentiment evaluation
+String recogRet = "", evalRet = "";
+
+String audioPrefixPath = null; 
 
 void setup() {
-  size(400, 400, P3D);
-  font = createFont("Arial", 16);
-  textFont(font);
-  
-  //audio input settings
-  minim = new Minim(this);
-  in = minim.getLineIn();
-  recorder = minim.createRecorder(in, "dummy.wav");
+	size(400, 400, P3D);
+  background(0);
+	font = createFont("Arial", 16);
 
+  audioPrefixPath = sketchPath("") + "Sound/";
 
-  // Starts a Websocket server at port defined above
-  myServer = new Server(this, serverPort);
+	//Audio Setup
+	minim = new Minim(this);
+	micIn = minim.getLineIn();
+	recorder = minim.createRecorder(micIn, audioPrefixPath + "dummy.wav");
+	//server setup
+	localServer = new Server(this, serverPort);
 }
 
-// supposed to be a call-back function of Processing when it closes.
-// not sure if it works, but if it does it stops both server and client.
+void evalSentiment() {
+	PostRequest post = new PostRequest("http://sentiment.vivekn.com/api/text/");
+	post.addData("txt", recogRet);
+	post.send();
+	JSONObject response = parseJSONObject(post.getContent());
+	JSONObject eval = response.getJSONObject("result");
+	evalRet = eval.getString("sentiment");
+}
+
+int playFileIndex;
+
+void idleBehavior() {
+	//select a random existing audio file to play on cell phone
+	if(currentRecFileNum != 0) {
+    Double rand = Math.random() * currentRecFileNum;
+		playFileIndex = rand.intValue();
+		PostRequest playFileCmd = new PostRequest("http://127.0.0.1:8081/PhoneCtrl");
+		playFileCmd.addData("command", "play");
+		playFileCmd.addData("filename", audioPrefixPath + "record" + playFileIndex + ".wav");
+		playFileCmd.send();
+		//TODO: make Orstrich perform default move
+    
+	}
+}
+
 @Override
 void stop() {
-  myServer.stop();
-  myClient.stop();
+  localServer.stop();
+  recogClient.stop();
   
   super.stop();
 }
 
-//evaluation part for therecognition result, using api from sentiment tool
-//http://sentiment.vivekn.com/docs/api/
+void draw() {
+	//two states: idle and record
+	if(isIdleState) {
+		//idle state
+		//perform idle behavior
+		idleBehavior();
+	}
+	else {
+		//record state
+		//check connection with client
+		if(!isConnected) {
+			//attempt to build connection
+			recogClient = localServer.available();
+			if(recogClient == null)
+				text("not connected, no available client found.", 10, 30);
+			else {
+				//build connection with client
+				webSocketProcessor = new WSProcessor(recogClient, true);
+				webSocketProcessor.connect();
+				isConnected = true;
+				if(!recorder.isRecording()) {
+					recorder = minim.createRecorder(micIn, audioPrefixPath + "record" + currentRecFileIndex + ".wav");
+					recorder.beginRecord();
+				}
+			}
+		}
+		else {
+			//client already connected, and recording
+			text("client connected", 10, 30);
+			String clientRet = webSocketProcessor.getMessageAsString();
+			if(clientRet != null) {
+				recogRet = clientRet;
+				evalSentiment();
+				if(recorder.isRecording()) {
+					recorder.save();
+					recorder.endRecord();
+					currentRecFileNum = min(currentRecFileNum + 1, maxRecFileNum);
+				}
+        //TODO: add relateive movement
 
-void evalSentiment() {
-  PostRequest post = new PostRequest("http://sentiment.vivekn.com/api/text/");
-  post.addData("txt", recogRet);
-  post.send();
-  JSONObject response = parseJSONObject(post.getContent());
-  JSONObject eval = response.getJSONObject("result");
-  evalRet = eval.getString("sentiment");
+
+
+				//reset connection, back to idle state
+				isConnected = false;
+				isIdleState = true;
+			}
+		}
+	}
+	//check if the client is active (i.e. still connected)
+	if(recogClient!=null && !recogClient.active()) {
+		webSocketProcessor.stop();
+		isConnected = false;
+	}
+
+	text("Last Recognition result received from client: ", 10, 50);
+	text(recogRet, 10, 70);
+	text(evalRet, 10, 90);
 }
 
-//check for new clients, update and draw. 
-void draw() {
-  
-  background(0);
-  fill(255);
-  text("Server IP: "+Server.ip(), 10, 20);
-
-  if(!isConnected) {
-    //if no client is connected, wait until there is one
-    myClient = myServer.available();
-    if(myClient != null) {
-      /* Here comes the golden part */
-      //1. create the WProcessor object, need to pass the client so it knows whom to talk with
-      myWSProcessor = new WSProcessor(myClient, true);
-      //2. call the connect method, which handles all the handshaking and figuring out the masking key
-      myWSProcessor.connect();
-      //3. call the sendMessage to send something to the client, can call mulitple times
-      myWSProcessor.sendMessage("You are connected");
-      /* That's it... for the starting and sending */
-      
-      isConnected = true;
-      if(!recorder.isRecording()) {
-        recorder = minim.createRecorder(in, "test" + recCnt + ".wav");
-        recorder.beginRecord();
-      }
-      println("isConnected set to true");
-    } else {
-      isConnected = false;
-      println("isConnected set to false");
-    }
-  } else { //the case when a client is connected
-    text("client connected", 10, 50);
-    String clientRet = myWSProcessor.getMessageAsString();
-    if(clientRet != null) {
-      recogRet = clientRet;
-      evalSentiment();
-      if(recorder.isRecording()) {
-        recorder.save();
-        recorder.endRecord();
-        println("save record");
-        recCnt++;
-      }
-      // restart connection
-      isConnected = false;
-    }
-    text("Latest recognition result received from client: ", 10, 70);
-    text(recogRet, 10, 90);
-    text(evalRet, 10, 110);
-  }
-
-  //check if the client is active (i.e. still connected)
-  if(myClient!=null && !myClient.active()) {
-    myWSProcessor.stop();
-    isConnected = false;
-  }
- 
+void keyPressed() {
+	if(key == 'r' || key == 'R') {
+		//if key r is pressed, switch to record mode
+		if(isIdleState = true)
+			isIdleState = false;
+	}
 }
