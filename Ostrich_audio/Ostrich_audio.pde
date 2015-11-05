@@ -212,7 +212,7 @@ int playFileIndex;
 void idleBehavior() {
 	//select a random existing audio file to play on cell phone
 
-/*	if(currentRecFileNum != 0) {
+	if(currentRecFileNum != 0) {
     Double rand = Math.random() * currentRecFileNum;
 		playFileIndex = rand.intValue();
 		PostRequest playFileCmd = new PostRequest("http://127.0.0.1:8081/PhoneCtrl");
@@ -220,8 +220,8 @@ void idleBehavior() {
 		playFileCmd.addData("filename", audioPrefixPath + "record" + playFileIndex + ".wav");
 		playFileCmd.send();
 		//TODO: make Orstrich perform default move
-            
-	}*/
+    delay(2000);
+  }
 }
 
 @Override
@@ -271,17 +271,17 @@ void draw() {
 					currentRecFileNum = min(currentRecFileNum + 1, maxRecFileNum);
 				}
 
-                                //TODO
-                                if (evalRet == "Neutral") {
-                                  //TODO add Neutral relateive movement
-                                  say0();  //example
-                                } else if (evalRet == "Positive") {
-                                  //TODO add Positive relateive movement
-                                  say1();  //example
-                                } else if (evalRet == "Nagtive") {
-                                  //TODO add Nagtive relateive movement
-                                  say2();  //example
-                                }
+        //TODO
+        if (evalRet == "Neutral") {
+          //TODO add Neutral relateive movement
+          say0();  //example
+        } else if (evalRet == "Positive") {
+          //TODO add Positive relateive movement
+          say1();  //example
+        } else if (evalRet == "Nagtive") {
+          //TODO add Nagtive relateive movement
+          say2();  //example
+        }
 
 				//reset connection, back to idle state
 				isConnected = false;
