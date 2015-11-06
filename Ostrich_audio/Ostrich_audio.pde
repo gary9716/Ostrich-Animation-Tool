@@ -73,12 +73,17 @@ void evalSentiment() {
 }
 
 int playFileIndex;
+AudioPlayer transAudioPlayer = null;
 
 void idleBehavior() {
 	//select a random existing audio file to play on cell phone
 
 	if(currentRecFileNum != 0) {
     
+    if(transAudioPlayer != null && transAudioPlayer.isPlaying()) {
+      return;
+    }
+
     String fileNameWithPath = null;
     String selectedFileNameWithPath = null;
 
@@ -113,7 +118,7 @@ void idleBehavior() {
     }
     
 
-    AudioPlayer transAudioPlayer = minim.loadFile(selectedFileNameWithPath);
+    transAudioPlayer = minim.loadFile(selectedFileNameWithPath);
     transAudioPlayer.play();
 
     //TODO: make Orstrich perform default move
