@@ -142,12 +142,9 @@ void draw() {
 		//perform idle behavior
 		idleBehavior();
 	}
-  else if(transAudioPlayer != null && transAudioPlayer.isPlaying()) {
+  else if(transAudioPlayer == null || !transAudioPlayer.isPlaying()) {
     //if the machine is still playing, then we wait for the playback ending.
-    text("Ostrich is busying, please wait for a while.", 10, 30);
-    return;
-  }
-	else {
+  
 		//record state
 		//check connection with client
 		if(!isConnected) {
@@ -206,7 +203,10 @@ void draw() {
 		isConnected = false;
 	}
 
-  if(!isConnected || recogClient == null) {
+  if(transAudioPlayer != null && transAudioPlayer.isPlaying()) {
+    text("Ostrich is busying, please wait for a while.", 10, 30);
+  }
+  else if(!isConnected || recogClient == null) {
     text("not connected, no available client found.", 10, 30);
   }
   else {
@@ -224,4 +224,10 @@ void keyPressed() {
 		if(isIdleState)
 			isIdleState = false;
 	}
+  else if(key == 's' || key == 'S') {
+    if(transAudioPlayer != null) {
+      transAudioPlayer.pause();
+    }
+
+  }
 }
