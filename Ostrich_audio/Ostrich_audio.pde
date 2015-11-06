@@ -76,54 +76,53 @@ int playFileIndex;
 AudioPlayer transAudioPlayer = null;
 
 void idleBehavior() {
-	//select a random existing audio file to play on cell phone
-
-	if(currentRecFileNum != 0) {
-    
-    if(transAudioPlayer != null && transAudioPlayer.isPlaying()) {
-      return;
-    }
-
-    String fileNameWithPath = null;
-    String selectedFileNameWithPath = null;
-
-    boolean applyEffect = true;
-
-    if(Math.random() > 0.5) {
-      //choose from recorded audio files
-      Double rand = Math.random() * currentRecFileNum;
-      playFileIndex = rand.intValue();
-      
-      // println("curr:" + currentRecFileNum + ",fileIndex:" + playFileIndex);
-    
-      fileNameWithPath = audioPrefixPath + "record" + playFileIndex + ".wav";
-    }
-    else {
-
-      Double rand = Math.random() * numExistedAudioFiles;
-      playFileIndex = rand.intValue();
-
-      //TODO: you can comment this to apply effect on v*.wav files.
-      applyEffect = false;
-
-      fileNameWithPath = audioPrefixPath + "v" + playFileIndex + ".wav";
-
-    }
-
-    if(applyEffect) {
-      selectedFileNameWithPath = audioPrefixPath + voiceChanger.process(fileNameWithPath);
-    }
-    else {
-      selectedFileNameWithPath = fileNameWithPath;
-    }
-    
-
-    transAudioPlayer = minim.loadFile(selectedFileNameWithPath);
-    transAudioPlayer.play();
-
-    //TODO: make Orstrich perform default move
-    
+	  
+  if(transAudioPlayer != null && transAudioPlayer.isPlaying()) {
+    return;
   }
+
+  delay(2000);
+
+  String fileNameWithPath = null;
+  String selectedFileNameWithPath = null;
+
+  boolean applyEffect = true;
+
+  if(Math.random() > 0.5 && currentRecFileNum != 0) {
+    //choose from recorded audio files
+    Double rand = Math.random() * currentRecFileNum;
+    playFileIndex = rand.intValue();
+    
+    // println("curr:" + currentRecFileNum + ",fileIndex:" + playFileIndex);
+  
+    fileNameWithPath = audioPrefixPath + "record" + playFileIndex + ".wav";
+  }
+  else {
+
+    Double rand = Math.random() * numExistedAudioFiles;
+    playFileIndex = rand.intValue();
+
+    //TODO: you can comment this to apply effect on v*.wav files.
+    applyEffect = false;
+
+    fileNameWithPath = audioPrefixPath + "v" + playFileIndex + ".wav";
+
+  }
+
+  if(applyEffect) {
+    selectedFileNameWithPath = audioPrefixPath + voiceChanger.process(fileNameWithPath);
+  }
+  else {
+    selectedFileNameWithPath = fileNameWithPath;
+  }
+  
+
+  transAudioPlayer = minim.loadFile(selectedFileNameWithPath);
+  transAudioPlayer.play();
+
+  //TODO: make Orstrich perform default move
+  
+  
 }
 
 @Override
