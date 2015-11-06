@@ -13,3 +13,7 @@ just like soulLamp but add an GUI
   https://seo-michael.co.uk/how-to-setup-adb-on-os-x/
 
   2. change directory to NodeJS/adbCtrlPhone/ and type "npm install" in terminal
+
+
+## New Sound Processing Library came from:
+  http://www.surina.net/soundtouch/index.html
