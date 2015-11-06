@@ -27,7 +27,7 @@ client.listDevices().then(function(devices) {
     device = devices[0];
   }
   else {
-    console.log("no device found, disable voice changer");
+    console.log("no device found, disable voice changer on nodeJS");
   }
 
   var loadAudioFile = function() {
