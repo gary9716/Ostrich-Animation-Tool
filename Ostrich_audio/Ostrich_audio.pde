@@ -101,6 +101,9 @@ void idleBehavior() {
 
     Double rand = Math.random() * numExistedAudioFiles;
     playFileIndex = rand.intValue();
+    if(playFileIndex >= numExistedAudioFiles) {
+      playFileIndex = numExistedAudioFiles - 1;
+    }
 
     //TODO: you can comment this to apply effect on v*.wav files.
     applyEffect = false;
