@@ -60,7 +60,7 @@ void setup() {
   
   //Aduino setup
   arduinoInit();
-  loadScript("newOstrich");  //TODO script filename
+  loadScript("SIC_Script");  //TODO script filename
 }
 
 void evalSentiment() {
@@ -124,7 +124,28 @@ void idleBehavior() {
   transAudioPlayer.play();
 
   //TODO: make Orstrich perform default move
-  
+  int randomValue = int(random(6));
+  println("perform act:" + randomValue);
+  switch(randomValue){
+    case 0:
+      shakeHead0();
+      break;
+    case 1:
+      shakeHead1();
+      break;
+    case 2:
+      rollHead0();
+      break;
+    case 3:
+      say0();
+      break;
+    case 4:
+      say1();
+      break;
+    case 5:
+      yell();
+      break;
+  }
   
 }
 
@@ -138,6 +159,7 @@ void stop() {
 
 void draw() {
   background(0);
+  String clientRet = null;
 
 	//two states: idle and record
 	if(isIdleState) {
@@ -166,8 +188,9 @@ void draw() {
 			}
 		}
 		else {
+      println("getting New Msg");
 			//client already connected, and recording
-			String clientRet = webSocketProcessor.getMessageAsString();
+			clientRet = webSocketProcessor.getMessageAsString();
 			if(clientRet != null) {
 				recogRet = clientRet;
 				evalSentiment();
@@ -182,11 +205,11 @@ void draw() {
         if (evalRet.equals("Neutral")) {
           //TODO add Neutral relateive movement
           println("play Neutral animation");
-          say0();  //example
+          rollHead0();  //example
         } else if (evalRet.equals("Positive")) {
           //TODO add Positive relateive movement
           println("play Positive animation");
-          say1();  //example
+          yell();  //example
         } else if (evalRet.equals("Negative")) {
           //TODO add Negative relateive movement
           println("play Negative animation");
@@ -210,10 +233,13 @@ void draw() {
     text("Ostrich is busying, please wait for a while.", 10, 30);
   }
   else if(!isConnected || recogClient == null) {
-    text("not connected, no available client found.", 10, 30);
+    text("not connected, press r to record", 10, 30);
   }
-  else {
-    text("client connected, you can start speaking", 10, 30);
+  else if(clientRet == null){
+    text("client connected, you can start speaking, waiting for result", 10, 30);
+  }
+  else{
+    text("result gotten:", 10, 30); 
   }
 
 	text("Last Recognition result received from client: ", 10, 50);
